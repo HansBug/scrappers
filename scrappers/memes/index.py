@@ -4,6 +4,7 @@ import time
 from tempfile import TemporaryDirectory
 from typing import Optional
 
+import numpy as np
 import pandas as pd
 import requests
 from ditk import logging
@@ -29,6 +30,17 @@ def _get_index_by_offset(offset: int = 0, session: Optional[requests.Session] = 
     resp.raise_for_status()
     for g in resp.json()['groups']:
         yield from g['items']
+
+
+def _to_list(x):
+    if isinstance(x, list):
+        return x
+    elif isinstance(x, np.ndarray):
+        return x.tolist()
+    elif isinstance(x, pd.Series):
+        return x.tolist()
+    else:
+        return x
 
 
 def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: float = 30,
@@ -116,6 +128,7 @@ def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: flo
                 df_records_shown = df_records[:50][
                     ['id', 'category', 'type', 'comments_count', 'favorites_count', 'image', 'link',
                      'title', 'summary', 'tags', 'created_at', 'updated_at']]
+                df_records_shown['tags'] = df_records_shown['tags'].map(_to_list)
                 print(f'{plural_word(len(df_records), "record")} in total. '
                       f'Only {plural_word(len(df_records_shown), "record")} shown.', file=f)
                 print(f'', file=f)
@@ -173,6 +186,7 @@ def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: flo
                 d_tags[tag_item['data']]['count'] += 1
                 tag_list.append(tag_item['data'])
             records.append({**item, 'tags': tag_list})
+            exist_ids.add(item['id'])
             has_update = True
 
         _deploy(force=False)
