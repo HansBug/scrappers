@@ -22,3 +22,4 @@ pynacl
 tqdm
 hbutils
 requests
+pyrate-limiter>=3
