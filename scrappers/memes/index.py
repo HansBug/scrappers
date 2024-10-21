@@ -44,7 +44,7 @@ def _to_list(x):
 
 
 def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: float = 30,
-         deploy_span: float = 5 * 60):
+         deploy_span: float = 5 * 60, sync_mode: bool = False):
     start_time = time.time()
     delete_detached_cache()
     hf_upload_rate = Rate(1, int(math.ceil(Duration.SECOND * upload_time_span)))
@@ -163,11 +163,13 @@ def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: flo
     })
 
     offset = 0
+    empty_page_count = 0
     while True:
         if start_time + max_time_limit < time.time():
             break
 
         page_items = list(_get_index_by_offset(offset=offset, session=session))
+        has_new_item = False
         for item in page_items:
             if start_time + max_time_limit < time.time():
                 break
@@ -188,11 +190,19 @@ def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: flo
             records.append({**item, 'tags': tag_list})
             exist_ids.add(item['id'])
             has_update = True
+            has_new_item = True
 
         _deploy(force=False)
 
         offset += len(page_items)
         if not page_items:
+            break
+        if not has_new_item:
+            empty_page_count += 1
+        else:
+            empty_page_count = 0
+        if empty_page_count >= 10:
+            logging.info('Quit due to sync model.')
             break
 
     _deploy(force=True)
@@ -202,4 +212,5 @@ if __name__ == '__main__':
     logging.try_init_root(level=logging.INFO)
     sync(
         repository='datacollection/memes_index',
+        sync_mode=True,
     )
