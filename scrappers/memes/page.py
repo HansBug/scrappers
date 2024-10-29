@@ -1,7 +1,6 @@
 import math
 import os
 import re
-import time
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
 from urllib.parse import urljoin
@@ -10,14 +9,17 @@ import pandas as pd
 import requests
 from bs4 import Tag
 from ditk import logging
-from hbutils.string import underscore
+from hbutils.string import underscore, plural_word
+from hbutils.system import TemporaryDirectory
 from hfutils.cache import delete_detached_cache
-from hfutils.operate import get_hf_client, get_hf_fs
+from hfutils.operate import get_hf_client, get_hf_fs, upload_directory_as_directory
+from hfutils.utils import number_to_tag
 from markdownify import MarkdownConverter
 from pyquery import PyQuery as pq
 from pyrate_limiter import Rate, Limiter, Duration
 from tqdm import tqdm
 
+from scrappers.memes.index import _to_list
 from ..utils import get_requests_session
 
 
@@ -141,10 +143,8 @@ def get_page_text(page_url, session: Optional[requests.Session] = None):
     }
 
 
-def sync(src_repo: str, dst_repo: str, max_time_limit: float = 50 * 60, upload_time_span: float = 30,
-         deploy_span: float = 5 * 60, sync_mode: bool = False, batch_size: int = 1000,
-         proxy_pool: Optional[str] = None):
-    start_time = time.time()
+def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30,
+         batch_size: int = 1000, proxy_pool: Optional[str] = None):
     delete_detached_cache()
     hf_upload_rate = Rate(1, int(math.ceil(Duration.SECOND * upload_time_span)))
     hf_upload_limiter = Limiter(hf_upload_rate, max_delay=1 << 32)
@@ -223,6 +223,8 @@ def sync(src_repo: str, dst_repo: str, max_time_limit: float = 50 * 60, upload_t
         for item in df_block.to_dict('records'):
             tp.submit(_run, item)
 
+        tp.shutdown(wait=True)
+
         if not has_update:
             continue
 
@@ -262,13 +264,12 @@ def sync(src_repo: str, dst_repo: str, max_time_limit: float = 50 * 60, upload_t
 
             hf_upload_limiter.try_acquire('hf upload limit')
             upload_directory_as_directory(
-                repo_id=repository,
+                repo_id=dst_repo,
                 repo_type='dataset',
                 local_directory=td,
                 path_in_repo='.',
                 message=f'Add {plural_word(len(df_records) - _total_count, "new record")} into index',
             )
-            has_update = False
             _total_count = len(df_records)
 
 
