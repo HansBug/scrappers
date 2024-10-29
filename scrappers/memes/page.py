@@ -68,10 +68,10 @@ def get_page_text(page_url, session: Optional[requests.Session] = None):
         if not pitem('sup'):
             continue
 
-        sup_id = int(pitem('sup').text().strip().lstrip('[').rstrip(']').strip())
+        sup_ids = list(map(int, re.findall(r'\[(\d+)]', pitem('sup').text().strip())))
         footnote = pitem('.footnote-text')
         refs.append({
-            'sup_id': sup_id,
+            'ids': sup_ids,
             'footnote': {
                 'text': footnote.text().strip(),
                 'md': to_md(footnote.text().strip(), page_url=resp.url).strip(),
@@ -137,6 +137,7 @@ def get_page_text(page_url, session: Optional[requests.Session] = None):
             'html': main_body_html.outer_html(),
             'md': main_body_md.strip(),
         },
+        'references': refs,
         'related_entries': related_entries,
         'recent_videos': recent_videos,
         'recent_images': recent_images,
