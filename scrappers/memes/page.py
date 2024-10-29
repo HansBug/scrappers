@@ -278,6 +278,6 @@ if __name__ == '__main__':
     sync(
         src_repo='datacollection/memes_index',
         dst_repo='datacollection/memes',
-        batch_size=100,
+        batch_size=1000,
         proxy_pool=os.environ['PP_SITE'],
     )
