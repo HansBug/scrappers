@@ -23,3 +23,5 @@ tqdm
 hbutils
 requests
 pyrate-limiter>=3
+openai
+httpx[socks]
