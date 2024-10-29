@@ -205,7 +205,7 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30,
                 vitem = get_page_text(ritem['link'], session=session)
                 records.append({
                     **ritem,
-                    'page_url': vitem,
+                    'page_url': vitem['page_url'],
                     'body_html': vitem['body']['html'],
                     'body_md': vitem['body']['md'],
                     'infos': vitem['infos'],
