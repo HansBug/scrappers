@@ -134,7 +134,7 @@ def get_page_text(page_url, session: Optional[requests.Session] = None):
         'page_url': resp.url,
         'infos': infos,
         'body': {
-            'html': main_body_html,
+            'html': main_body_html.outer_html(),
             'md': main_body_md.strip(),
         },
         'related_entries': related_entries,
