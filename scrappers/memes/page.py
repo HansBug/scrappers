@@ -1,12 +1,22 @@
+import math
+import os
 import re
+import time
+from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
 from urllib.parse import urljoin
 
+import pandas as pd
 import requests
 from bs4 import Tag
+from ditk import logging
 from hbutils.string import underscore
+from hfutils.cache import delete_detached_cache
+from hfutils.operate import get_hf_client, get_hf_fs
 from markdownify import MarkdownConverter
 from pyquery import PyQuery as pq
+from pyrate_limiter import Rate, Limiter, Duration
+from tqdm import tqdm
 
 from ..utils import get_requests_session
 
@@ -37,7 +47,7 @@ def get_page_text(page_url, session: Optional[requests.Session] = None):
     page = pq(resp.text)
 
     main_body_html = page('#entry_body section.bodycopy')
-    main_body_md = to_md(main_body_html.outer_html(), page_url=page_url)
+    main_body_md = to_md(main_body_html.outer_html(), page_url=resp.url)
 
     tags_html = page('#entry_body aside.left')
     infos = {}
@@ -47,7 +57,7 @@ def get_page_text(page_url, session: Optional[requests.Session] = None):
         infos[key] = {
             'key': dt_item.text().strip(),
             'text': dd_item.text().strip(),
-            'md': to_md(dd_item.outer_html(), page_url=page_url).strip(),
+            'md': to_md(dd_item.outer_html(), page_url=resp.url).strip(),
             'raw': dd_item.outer_html(),
         }
 
@@ -62,7 +72,7 @@ def get_page_text(page_url, session: Optional[requests.Session] = None):
             'sup_id': sup_id,
             'footnote': {
                 'text': footnote.text().strip(),
-                'md': to_md(footnote.text().strip(), page_url=page_url).strip(),
+                'md': to_md(footnote.text().strip(), page_url=resp.url).strip(),
                 'raw': footnote.outer_html(),
             }
         })
@@ -93,7 +103,7 @@ def get_page_text(page_url, session: Optional[requests.Session] = None):
             if ritem('a.video img').attr('data-src') else None,
             'info': {
                 'text': info_item.text().strip(),
-                'md': to_md(info_item.outer_html(), page_url=page_url).strip(),
+                'md': to_md(info_item.outer_html(), page_url=resp.url).strip(),
                 'raw': info_item.outer_html(),
             }
         })
@@ -113,7 +123,7 @@ def get_page_text(page_url, session: Optional[requests.Session] = None):
             if ritem('a.photo img').attr('data-src') else None,
             'info': {
                 'text': info_item.text().strip(),
-                'md': to_md(info_item.outer_html(), page_url=page_url).strip(),
+                'md': to_md(info_item.outer_html(), page_url=resp.url).strip(),
                 'raw': info_item.outer_html(),
             }
         })
@@ -129,3 +139,144 @@ def get_page_text(page_url, session: Optional[requests.Session] = None):
         'recent_videos': recent_videos,
         'recent_images': recent_images,
     }
+
+
+def sync(src_repo: str, dst_repo: str, max_time_limit: float = 50 * 60, upload_time_span: float = 30,
+         deploy_span: float = 5 * 60, sync_mode: bool = False, batch_size: int = 1000,
+         proxy_pool: Optional[str] = None):
+    start_time = time.time()
+    delete_detached_cache()
+    hf_upload_rate = Rate(1, int(math.ceil(Duration.SECOND * upload_time_span)))
+    hf_upload_limiter = Limiter(hf_upload_rate, max_delay=1 << 32)
+
+    hf_client = get_hf_client()
+    hf_fs = get_hf_fs()
+
+    if not hf_client.repo_exists(repo_id=dst_repo, repo_type='dataset'):
+        hf_client.create_repo(repo_id=dst_repo, repo_type='dataset', private=True)
+        attr_lines = hf_fs.read_text(f'datasets/{dst_repo}/.gitattributes').splitlines(keepends=False)
+        attr_lines.append('*.json filter=lfs diff=lfs merge=lfs -text')
+        attr_lines.append('*.csv filter=lfs diff=lfs merge=lfs -text')
+        hf_fs.write_text(
+            f'datasets/{dst_repo}/.gitattributes',
+            os.linesep.join(attr_lines),
+        )
+
+    df_src = pd.read_parquet(hf_client.hf_hub_download(
+        repo_id=src_repo,
+        repo_type='dataset',
+        filename='table.parquet',
+    ))
+
+    if hf_fs.exists(f'datasets/{dst_repo}/table.parquet'):
+        df_dst = pd.read_parquet(hf_client.hf_hub_download(
+            repo_id=dst_repo,
+            repo_type='dataset',
+            filename='table.parquet',
+        ))
+        records = df_dst.to_dict('records')
+        exist_ids = set(df_dst['id'])
+        _total_count = len(df_dst)
+    else:
+        records = []
+        exist_ids = set()
+        _total_count = 0
+
+    session = get_requests_session()
+    if proxy_pool:
+        logging.info(f'Proxy pool {proxy_pool!r} enabled.')
+        session.proxies.update({
+            'http': proxy_pool,
+            'https': proxy_pool
+        })
+
+    df_src = df_src[~df_src['id'].isin(exist_ids)]
+    for batch_id in range(int(math.ceil(len(df_src) / batch_size))):
+        df_block = df_src[batch_id * batch_size:(batch_id + 1) * batch_size]
+        logging.info(f'Syncing block #{batch_id!r} ...')
+
+        tp = ThreadPoolExecutor(max_workers=32)
+        has_update = False
+        pg = tqdm(desc=f'Block #{batch_id}', total=len(df_block))
+
+        def _run(ritem):
+            nonlocal has_update
+            try:
+                vitem = get_page_text(ritem['link'], session=session)
+                records.append({
+                    **ritem,
+                    'page_url': vitem,
+                    'body_html': vitem['body']['html'],
+                    'body_md': vitem['body']['md'],
+                    'infos': vitem['infos'],
+                    'related_entries': vitem['related_entries'],
+                    'recent_images': vitem['recent_images'],
+                    'recent_videos': vitem['recent_videos'],
+                })
+                has_update = True
+            except Exception as err:
+                logging.info(f'Error occurred when running #{ritem["id"]!r}, url: {ritem["link"]!r} - {err!r}')
+                raise
+            finally:
+                pg.update()
+
+        for item in df_block.to_dict('records'):
+            tp.submit(_run, item)
+
+        if not has_update:
+            continue
+
+        with TemporaryDirectory() as td:
+            parquet_file = os.path.join(td, 'table.parquet')
+            df_records = pd.DataFrame(records)
+            df_records = df_records.sort_values(by=['id'], ascending=[False])
+            df_records.to_parquet(parquet_file, engine='pyarrow', index=False)
+
+            with open(os.path.join(td, 'README.md'), 'w') as f:
+                print('---', file=f)
+                print('license: other', file=f)
+                print('language:', file=f)
+                print('- en', file=f)
+                print('tags:', file=f)
+                print('- meme', file=f)
+                print('size_categories:', file=f)
+                print(f'- {number_to_tag(len(df_records))}', file=f)
+                print('annotations_creators:', file=f)
+                print('- no-annotation', file=f)
+                print('source_datasets:', file=f)
+                print('- knowyourmeme.com', file=f)
+                print('---', file=f)
+                print('', file=f)
+
+                print('## Records', file=f)
+                print(f'', file=f)
+                df_records_shown = df_records[:50][
+                    ['id', 'category', 'type', 'comments_count', 'favorites_count', 'image', 'link',
+                     'title', 'summary', 'tags', 'created_at', 'updated_at']]
+                df_records_shown['tags'] = df_records_shown['tags'].map(_to_list)
+                print(f'{plural_word(len(df_records), "record")} in total. '
+                      f'Only {plural_word(len(df_records_shown), "record")} shown.', file=f)
+                print(f'', file=f)
+                print(df_records_shown.to_markdown(index=False), file=f)
+                print(f'', file=f)
+
+            hf_upload_limiter.try_acquire('hf upload limit')
+            upload_directory_as_directory(
+                repo_id=repository,
+                repo_type='dataset',
+                local_directory=td,
+                path_in_repo='.',
+                message=f'Add {plural_word(len(df_records) - _total_count, "new record")} into index',
+            )
+            has_update = False
+            _total_count = len(df_records)
+
+
+if __name__ == '__main__':
+    logging.try_init_root(level=logging.INFO)
+    sync(
+        src_repo='datacollection/memes_index',
+        dst_repo='datacollection/memes',
+        batch_size=1000,
+        proxy_pool=os.environ['PP_SITE'],
+    )
