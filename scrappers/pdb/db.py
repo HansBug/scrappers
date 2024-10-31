@@ -106,7 +106,7 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30,
                                 exist_comment_ids.add(comment_item['id'])
                                 has_update = True
             except Exception as err:
-                logging.info(f'Error occurred when running #{ritem["id"]!r} - {err!r}')
+                logging.warning(f'Error occurred when running #{ritem["id"]!r} - {err!r}')
                 raise
             finally:
                 pg.update()
