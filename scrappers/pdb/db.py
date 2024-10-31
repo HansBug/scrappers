@@ -90,16 +90,16 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30,
         lock = Lock()
 
         def _run(ritem):
-            nonlocal has_update
+            nonlocal has_update, comments, records, exist_comment_ids
             try:
                 vitem = get_profile(ritem['id'], session=session)
-                comments = get_comments(ritem['id'], session=session)
+                comment_items = get_comments(ritem['id'], session=session)
                 with lock:
                     if vitem['id'] not in exist_ids:
                         records.append(vitem)
                         exist_ids.add(vitem['id'])
                         has_update = True
-                    for comment_item in comments:
+                    for comment_item in comment_items:
                         if comment_item['id'] not in exist_comment_ids:
                             comments.append(comment_item)
                             exist_comment_ids.add(comment_item['id'])
@@ -126,6 +126,7 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30,
 
             comment_parquet_file = os.path.join(td, 'comments.parquet')
             df_comments = pd.DataFrame(comments)
+
             df_comments = df_comments.sort_values(by=['profile_id', 'id'], ascending=[False, False])
             df_comments.to_parquet(comment_parquet_file, engine='pyarrow', index=False)
 
