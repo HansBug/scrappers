@@ -151,6 +151,7 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30,
                 df_records_shown = df_records[:50][
                     [
                         'id',  # 唯一标识符
+                        'mbti_profile',
                         'category',  # 分类名称
                         'subcategory',  # 子分类名称
                         'mbti_profile',  # MBTI配置文件名称
