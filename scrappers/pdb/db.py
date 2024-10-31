@@ -95,6 +95,7 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30,
                 vitem = get_profile(ritem['id'], session=session)
                 comment_items = get_comments(ritem['id'], session=session)
                 with lock:
+                    logging.info(f'access {ritem["id"]!r} --> {vitem["id"]!r}')
                     if vitem['id'] not in exist_ids:
                         records.append(vitem)
                         exist_ids.add(vitem['id'])
