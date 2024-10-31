@@ -8,15 +8,21 @@ from ditk import logging
 from scrappers.utils import get_requests_session
 
 
-def get_profile(pid: int, session: Optional[requests.Session] = None):
+def get_profile(pid: int, max_retries: int = 3, session: Optional[requests.Session] = None):
     session = session or get_requests_session()
+    tries = 0
     while True:
         logging.info(f'Get profile of {pid!r} ...')
         resp = session.get(f'https://api.personality-database.com/api/v1/profile/{pid}')
         if resp.status_code == 403:
-            logging.warning('Get 403, wait for some time.')
-            time.sleep(0.5)
-            continue
+            sleep_time = 2 ** tries
+            tries += 1
+            logging.warning(f'Get 403 ({tries}/{max_retries}), wait for {sleep_time}s.')
+            if tries <= max_retries:
+                time.sleep(sleep_time)
+                continue
+            else:
+                resp.raise_for_status()
         else:
             resp.raise_for_status()
             break
@@ -25,8 +31,10 @@ def get_profile(pid: int, session: Optional[requests.Session] = None):
 
 
 def get_comments(pid: int, sort: str = 'HOT', offset: int = 0, range: str = 'all',
-                 limit: int = 100, version: str = 'W3', session: Optional[requests.Session] = None):
+                 limit: int = 100, version: str = 'W3',
+                 max_retries: int = 3, session: Optional[requests.Session] = None):
     session = session or get_requests_session()
+    tries = 0
     while True:
         logging.info(f'Get profile comments of {pid!r} ...')
         resp = session.get(
@@ -40,9 +48,14 @@ def get_comments(pid: int, sort: str = 'HOT', offset: int = 0, range: str = 'all
             }
         )
         if resp.status_code == 403:
-            logging.warning('Get 403, wait for some time.')
-            time.sleep(0.5)
-            continue
+            sleep_time = 2 ** tries
+            tries += 1
+            logging.warning(f'Get 403 ({tries}/{max_retries}), wait for {sleep_time}s.')
+            if tries <= max_retries:
+                time.sleep(sleep_time)
+                continue
+            else:
+                resp.raise_for_status()
         else:
             resp.raise_for_status()
             break
