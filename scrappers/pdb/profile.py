@@ -8,7 +8,7 @@ from ditk import logging
 from scrappers.utils import get_requests_session
 
 
-def get_profile(pid: int, max_retries: int = 3, session: Optional[requests.Session] = None):
+def get_profile(pid: int, max_retries: int = 5, session: Optional[requests.Session] = None):
     session = session or get_requests_session()
     tries = 0
     while True:
@@ -32,7 +32,7 @@ def get_profile(pid: int, max_retries: int = 3, session: Optional[requests.Sessi
 
 def get_comments(pid: int, sort: str = 'HOT', offset: int = 0, range: str = 'all',
                  limit: int = 100, version: str = 'W3',
-                 max_retries: int = 3, session: Optional[requests.Session] = None):
+                 max_retries: int = 5, session: Optional[requests.Session] = None):
     session = session or get_requests_session()
     tries = 0
     while True:
