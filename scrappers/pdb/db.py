@@ -80,7 +80,10 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30,
         })
 
     df_src = df_src[~df_src['id'].isin(exist_ids)]
+    page_x = 0
     for batch_id in range(int(math.ceil(len(df_src) / batch_size))):
+        if page_x > 5:
+            break
         df_block = df_src[batch_id * batch_size:(batch_id + 1) * batch_size]
         logging.info(f'Syncing block #{batch_id!r} ...')
 
@@ -116,6 +119,7 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30,
 
         tp.shutdown(wait=True)
 
+        page_x += 1
         if not has_update:
             continue
 
