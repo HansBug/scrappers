@@ -17,11 +17,12 @@ def get_profile(pid: int, max_retries: int = 5, session: Optional[requests.Sessi
         if resp.status_code == 403:
             sleep_time = 2 ** tries
             tries += 1
-            logging.warning(f'Get 403 ({tries}/{max_retries}), wait for {sleep_time}s.')
             if tries <= max_retries:
+                logging.warning(f'Get 403 ({tries}/{max_retries}), wait for {sleep_time}s.')
                 time.sleep(sleep_time)
                 continue
             else:
+                logging.error('Out of retries, raised.')
                 resp.raise_for_status()
         else:
             resp.raise_for_status()
@@ -50,11 +51,12 @@ def get_comments(pid: int, sort: str = 'HOT', offset: int = 0, range: str = 'all
         if resp.status_code == 403:
             sleep_time = 2 ** tries
             tries += 1
-            logging.warning(f'Get 403 ({tries}/{max_retries}), wait for {sleep_time}s.')
             if tries <= max_retries:
+                logging.warning(f'Get 403 ({tries}/{max_retries}), wait for {sleep_time}s.')
                 time.sleep(sleep_time)
                 continue
             else:
+                logging.error('Out of retries, raised.')
                 resp.raise_for_status()
         else:
             resp.raise_for_status()
