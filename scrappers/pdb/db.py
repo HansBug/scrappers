@@ -99,11 +99,11 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30,
                         records.append(vitem)
                         exist_ids.add(vitem['id'])
                         has_update = True
-                    for comment_item in comment_items:
-                        if comment_item['id'] not in exist_comment_ids:
-                            comments.append(comment_item)
-                            exist_comment_ids.add(comment_item['id'])
-                            has_update = True
+                        for comment_item in comment_items:
+                            if comment_item['id'] not in exist_comment_ids:
+                                comments.append(comment_item)
+                                exist_comment_ids.add(comment_item['id'])
+                                has_update = True
             except Exception as err:
                 logging.info(f'Error occurred when running #{ritem["id"]!r}, url: {ritem["link"]!r} - {err!r}')
                 raise
