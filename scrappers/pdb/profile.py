@@ -19,6 +19,8 @@ def get_profile(pid: int, session: Optional[requests.Session] = None):
             continue
         else:
             resp.raise_for_status()
+            break
+
     return resp.json()
 
 
@@ -43,7 +45,8 @@ def get_comments(pid: int, sort: str = 'HOT', offset: int = 0, range: str = 'all
             continue
         else:
             resp.raise_for_status()
-    resp.raise_for_status()
+            break
+
     return resp.json()['comments']
 
 
