@@ -159,6 +159,7 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30,
                         'contributor_create_date',  # 贡献者创建日期
                         'total_vote_counts',  # 总投票数
                         'vote_count',  # MBTI投票数
+                        'vote_count_mbti',  # MBTI投票数
                         'vote_count_enneagram',  # Enneagram投票数
                         'comment_count',  # 评论数量
                         'watch_count',  # 观看数量
@@ -167,9 +168,6 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30,
                         'profile_image_url',  # 配置文件图片URL
                         'mbti_type',  # MBTI类型
                         'alt_subcategory',  # 替代子分类
-                        'type_updated_date',  # 类型更新日期
-                        'functions',  # 功能描述
-                        'related_profiles'  # 相关配置文件
                     ]
                 ]
                 print(f'{plural_word(len(df_records), "record")} in total. '
@@ -188,7 +186,6 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30,
                         'user_mbti',  # 用户MBTI类型
                         'create_date',  # 创建日期
                         'update_date',  # 更新日期
-                        'comment',  # 评论内容
                         'reply_count',  # 回复数
                         'user_title',  # 用户头衔
                         'user_standing',  # 用户社区地位
@@ -196,9 +193,7 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30,
                         'is_active',  # 是否活跃
                         'allow_voting',  # 是否允许投票
                         'vote_count',  # 投票数
-                        'theVote',  # 投票详情
                         'pic_path',  # 图片路径
-                        'user_comment_status_line',  # 用户状态行
                         'is_pro_user',  # 是否为专业用户
                         'page_owner_id',  # 页面所有者ID
                         'is_hidden'  # 是否隐藏
