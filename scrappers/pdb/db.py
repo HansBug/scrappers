@@ -148,7 +148,30 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30,
 
                 print('## Records', file=f)
                 print(f'', file=f)
-                df_records_shown = df_records[:50]
+                df_records_shown = df_records[:50][
+                    [
+                        'id',  # 唯一标识符
+                        'category',  # 分类名称
+                        'subcategory',  # 子分类名称
+                        'mbti_profile',  # MBTI配置文件名称
+                        'personality_type',  # 个性类型描述
+                        'contributor',  # 贡献者名称
+                        'contributor_create_date',  # 贡献者创建日期
+                        'total_vote_counts',  # 总投票数
+                        'vote_count',  # MBTI投票数
+                        'vote_count_enneagram',  # Enneagram投票数
+                        'comment_count',  # 评论数量
+                        'watch_count',  # 观看数量
+                        'is_active',  # 是否活跃
+                        'is_approved',  # 是否已批准
+                        'profile_image_url',  # 配置文件图片URL
+                        'mbti_type',  # MBTI类型
+                        'alt_subcategory',  # 替代子分类
+                        'type_updated_date',  # 类型更新日期
+                        'functions',  # 功能描述
+                        'related_profiles'  # 相关配置文件
+                    ]
+                ]
                 print(f'{plural_word(len(df_records), "record")} in total. '
                       f'Only {plural_word(len(df_records_shown), "record")} shown.', file=f)
                 print(f'', file=f)
@@ -157,7 +180,30 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30,
 
                 print('## Comments', file=f)
                 print(f'', file=f)
-                df_comments_shown = df_comments[:50]
+                df_comments_shown = df_comments[:50][
+                    [
+                        'id',  # 数据项唯一标识符
+                        'profile_id',  # 用户资料ID
+                        'username',  # 用户名
+                        'user_mbti',  # 用户MBTI类型
+                        'create_date',  # 创建日期
+                        'update_date',  # 更新日期
+                        'comment',  # 评论内容
+                        'reply_count',  # 回复数
+                        'user_title',  # 用户头衔
+                        'user_standing',  # 用户社区地位
+                        'user_contribution',  # 用户贡献
+                        'is_active',  # 是否活跃
+                        'allow_voting',  # 是否允许投票
+                        'vote_count',  # 投票数
+                        'theVote',  # 投票详情
+                        'pic_path',  # 图片路径
+                        'user_comment_status_line',  # 用户状态行
+                        'is_pro_user',  # 是否为专业用户
+                        'page_owner_id',  # 页面所有者ID
+                        'is_hidden'  # 是否隐藏
+                    ]
+                ]
                 print(f'{plural_word(len(df_comments), "comment")} in total. '
                       f'Only {plural_word(len(df_comments_shown), "comment")} shown.', file=f)
                 print(f'', file=f)
