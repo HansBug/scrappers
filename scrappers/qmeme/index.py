@@ -202,7 +202,7 @@ def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: flo
             break
         for item in list_all_from_page(base_url=base_url, session=session):
             if item['id'] in exist_ids:
-                logging.info(f'Item {item["id"]!r} already exist, skipped.')
+                logging.warning(f'Item {item["id"]!r} already exist, skipped.')
                 continue
 
             logging.info(f'Item {item["id"]!r} confirmed.')
