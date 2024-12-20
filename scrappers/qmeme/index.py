@@ -1,3 +1,4 @@
+import json
 import math
 import os
 import time
@@ -123,7 +124,11 @@ def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: flo
             os.linesep.join(attr_lines),
         )
 
-    if hf_fs.exists(f'datasets/{repository}/table.parquet'):
+    if hf_client.file_exists(
+            repo_id=repository,
+            repo_type='dataset',
+            filename='table.parquet',
+    ):
         df = pd.read_parquet(hf_client.hf_hub_download(
             repo_id=repository,
             repo_type='dataset',
@@ -134,6 +139,16 @@ def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: flo
     else:
         records = []
         exist_ids = set()
+
+    if hf_client.file_exists(
+            repo_id=repository,
+            repo_type='dataset',
+            filename='meta.json',
+    ):
+        meta_info = json.loads(hf_fs.read_text(f'datasets/{repository}/meta.json'))
+        exist_groups = set(meta_info['exist_groups'])
+    else:
+        exist_groups = set()
 
     _last_update, has_update = None, False
     _total_count = len(records)
@@ -151,6 +166,11 @@ def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: flo
             df_records = pd.DataFrame(records)
             df_records = df_records.sort_values(by=['id'], ascending=[False])
             df_records.to_parquet(parquet_file, engine='pyarrow', index=False)
+
+            with open(os.path.join(td, 'meta.json'), 'w') as f:
+                json.dump({
+                    'exist_groups': exist_groups,
+                }, f)
 
             with open(os.path.join(td, 'README.md'), 'w') as f:
                 print('---', file=f)
@@ -200,6 +220,10 @@ def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: flo
     for gtitle, base_url in tqdm(list(get_meme_list(session=session)), desc='List Pages'):
         if start_time + max_time_limit < time.time():
             break
+        if gtitle in exist_groups:
+            logging.info(f'Group {gtitle!r} already exist, skipped.')
+            continue
+
         for item in list_all_from_page(base_url=base_url, session=session):
             if item['id'] in exist_ids:
                 logging.warning(f'Item {item["id"]!r} already exist, skipped.')
@@ -214,6 +238,10 @@ def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: flo
             exist_ids.add(item['id'])
             has_update = True
             _deploy(force=False)
+
+        exist_groups.add(gtitle)
+        has_update = True
+        _deploy(force=False)
 
     _deploy(force=True)
 
