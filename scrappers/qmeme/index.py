@@ -189,7 +189,7 @@ def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: flo
             _last_update = time.time()
             _total_count = len(df_records)
 
-    session = get_requests_session()
+    session = get_requests_session(timeout=15)
     if proxy_pool:
         logging.info(f'Proxy pool {proxy_pool!r} enabled.')
         session.proxies.update({
