@@ -21,7 +21,7 @@ def _get_index_by_offset(offset: int = 0, session: Optional[requests.Session] = 
     logging.info(f'Get page offset {offset!r} ...')
     session = session or get_requests_session()
     resp = session.get(
-        'https://knowyourmeme.com/memes/confirmed',
+        'https://knowyourmeme.com/memes/all',
         params={
             'sort': 'newest',
             'offset': int(offset),
@@ -157,8 +157,8 @@ def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: flo
 
     session = get_requests_session()
     session.headers.update({
-        'Cookie': '_ga=GA1.1.1171191360.1729229221; _cb=DagxJTCLoz6tD_aFZv; compass_uid=204d25fb-3668-46f8-9166-a329e71b2977; pushly.user_puuid_TgtvAlfG=Kjx6rmU0byTkBcm4K2hloOeBsEr2Vq6l; _pnlspid_TgtvAlfG=32133; _hjSessionUser_4936301=eyJpZCI6IjE5YTdjNGFkLTAwMjktNWNjYi1iMzQyLWQ4ODMwMDE3NGJhMiIsImNyZWF0ZWQiOjE3MjkyMjkyMjE2NjcsImV4aXN0aW5nIjp0cnVlfQ==; _y=9e187072-B9DB-4331-307A-8EF2CCF7AAD6; _shopify_y=9e187072-B9DB-4331-307A-8EF2CCF7AAD6; _pnpdm_TgtvAlfG=true; _know_your_meme_session=BAh7CUkiD3Nlc3Npb25faWQGOgZFVEkiJTMzNmE3OTU4N2M4NTRmZTEzZDgxMmMwZjcyMThkZDJkBjsAVEkiCW5zZncGOwBGRkkiCGZvbwY7AEZJIghiYXIGOwBUSSIQX2NzcmZfdG9rZW4GOwBGSSIxMlNjb3VvOXNOMlUwc0tlaHYvTjNxMUpiREZKcXVjWmd2UmRlTDNtM2R3ST0GOwBG--80775e1b4b4a7186527ef01fc4f46da8732fdd6d; split=%7B%22split%3A213803%22%3A%22redesign%22%7D; split_all_domain=%7B%22split%3A213803%22%3A%22redesign%22%7D; ___nrbi=%7B%22firstVisit%22%3A1729229221%2C%22userId%22%3A%22204d25fb-3668-46f8-9166-a329e71b2977%22%2C%22userVars%22%3A%5B%5D%2C%22futurePreviousVisit%22%3A1729526495%2C%22timesVisited%22%3A3%7D; _cb_svref=https%3A%2F%2Fknowyourmeme.com%2Fmemes; _pnss_TgtvAlfG=blocked; _hjSession_1004046=eyJpZCI6ImQ0OTkxOGMyLTgxNDktNDg2MC1iZWQ3LTI0NTZhNWFiNjk1NiIsImMiOjE3Mjk1MjY0OTkxMjMsInMiOjAsInIiOjAsInNiIjowLCJzciI6MCwic2UiOjAsImZzIjoxLCJzcCI6MH0=; _hjSessionUser_1004046=eyJpZCI6IjlhYTU2Nzk3LWIwY2UtNTRmYy04NWUwLTU0OTY0MDZiZTY1OCIsImNyZWF0ZWQiOjE3Mjk1MjY0OTkxMjIsImV4aXN0aW5nIjp0cnVlfQ==; _s=afd03a48-869B-4486-9A75-E08AA3F275B4; _shopify_s=afd03a48-869B-4486-9A75-E08AA3F275B4; _chartbeat5=; _chartbeat2=.1729229221474.1729527123109.10001.CGx0h6DCe7iDCEGpXBDYtdVJBzhQMv.6; ___nrbic=%7B%22landingPage%22%3A%22https%3A//knowyourmeme.com/%22%2C%22referrer%22%3A%22%22%2C%22lpti%22%3Anull%2C%22previousVisit%22%3A1729231287%2C%22currentVisitStarted%22%3A1729526495%2C%22sessionId%22%3A%2207799a4d-6c47-4ad3-a964-1309c05c39e5%22%2C%22sessionVars%22%3A%5B%5D%2C%22visitedInThisSession%22%3Atrue%2C%22pagesViewed%22%3A6%7D; _ga_5FPLDLE8C6=GS1.1.1729526494.3.1.1729527123.0.0.0; _awl=2.1729527126.5-0ec718646045104bee6f0440222cb7ab-6763652d617369612d6561737431-1',
-        'Referer': 'https://knowyourmeme.com/memes/confirmed',
+        'Cookie': '_ga=GA1.1.1171191360.1729229221; _cb=DagxJTCLoz6tD_aFZv; compass_uid=204d25fb-3668-46f8-9166-a329e71b2977; pushly.user_puuid_TgtvAlfG=Kjx6rmU0byTkBcm4K2hloOeBsEr2Vq6l; _pnlspid_TgtvAlfG=32133; _hjSessionUser_4936301=eyJpZCI6IjE5YTdjNGFkLTAwMjktNWNjYi1iMzQyLWQ4ODMwMDE3NGJhMiIsImNyZWF0ZWQiOjE3MjkyMjkyMjE2NjcsImV4aXN0aW5nIjp0cnVlfQ==; _y=9e187072-B9DB-4331-307A-8EF2CCF7AAD6; _shopify_y=9e187072-B9DB-4331-307A-8EF2CCF7AAD6; _hjSessionUser_1004046=eyJpZCI6IjlhYTU2Nzk3LWIwY2UtNTRmYy04NWUwLTU0OTY0MDZiZTY1OCIsImNyZWF0ZWQiOjE3Mjk1MjY0OTkxMjIsImV4aXN0aW5nIjp0cnVlfQ==; _pnss_TgtvAlfG=blocked; _ga_5FPLDLE8C6=GS1.1.1730216484.7.0.1730216484.0.0.0; split=%7B%22split%3A213803%22%3A%22redesign%22%7D; split_all_domain=%7B%22split%3A213803%22%3A%22redesign%22%7D; ___nrbi=%7B%22firstVisit%22%3A1729229221%2C%22userId%22%3A%22204d25fb-3668-46f8-9166-a329e71b2977%22%2C%22userVars%22%3A%5B%5D%2C%22futurePreviousVisit%22%3A1733141908%2C%22timesVisited%22%3A6%7D; _hjSession_1004046=eyJpZCI6IjhjMzFhYTYyLTAxYjUtNDljZS04MmNiLTIwYThlYzU3YTM2MiIsImMiOjE3MzMxNDE5MTEyNTcsInMiOjAsInIiOjAsInNiIjowLCJzciI6MCwic2UiOjAsImZzIjowLCJzcCI6MH0=; ___nrbic=%7B%22previousVisit%22%3A1730200942%2C%22currentVisitStarted%22%3A1733141908%2C%22sessionId%22%3A%22bb41b6a7-eb03-407d-9ab7-67a65646b42f%22%2C%22sessionVars%22%3A%5B%5D%2C%22visitedInThisSession%22%3Atrue%2C%22pagesViewed%22%3A3%2C%22landingPage%22%3A%22https%3A//knowyourmeme.com/memes/all%22%2C%22referrer%22%3A%22%22%2C%22lpti%22%3Anull%7D; _chartbeat2=.1729229221474.1733141951004.0000000000000001.hNuNCC5CNJIkSeVVCJvfyFBsMuwg.1; _cb_svref=external; _pn_TgtvAlfG=eyJzdWIiOnsidWRyIjowLCJpZCI6IktqeDZybVUwYnlUa0JjbTRLMmhsb09lQnNFcjJWcTZsIiwic3MiOi0xfSwibHVhIjoxNzMzMTQxOTIzODUwfQ; _awl=2.1733141960.5-0ec718646045104bee6f0440222cb7ab-6763652d617369612d6561737431-1; _ga_5FPLDLE8C6=GS1.1.1733141908.8.1.1733141969.0.0.0; _chartbeat5=309|1659|%2Fcategories%2Fmeme|https%3A%2F%2Fknowyourmeme.com%2Fcategories%2Fmeme%2Fpage%2F2%3Fsort%3Dnewest%26status%3Dall|Be3E7zZ24C6CAxpsuBBlDykBFOf2Z||c|Be3E7zZ24C6CAxpsuBBlDykBFOf2Z|knowyourmeme.com|',
+        'Referer': 'https://knowyourmeme.com/memes/all',
         'content-type': 'application/json',
     })
 
@@ -210,7 +210,15 @@ def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: flo
 
 if __name__ == '__main__':
     logging.try_init_root(level=logging.INFO)
-    sync(
-        repository='datacollection/memes_index',
-        sync_mode=True,
-    )
+    session = get_requests_session()
+    session.headers.update({
+        'Cookie': '_ga=GA1.1.1171191360.1729229221; _cb=DagxJTCLoz6tD_aFZv; compass_uid=204d25fb-3668-46f8-9166-a329e71b2977; pushly.user_puuid_TgtvAlfG=Kjx6rmU0byTkBcm4K2hloOeBsEr2Vq6l; _pnlspid_TgtvAlfG=32133; _hjSessionUser_4936301=eyJpZCI6IjE5YTdjNGFkLTAwMjktNWNjYi1iMzQyLWQ4ODMwMDE3NGJhMiIsImNyZWF0ZWQiOjE3MjkyMjkyMjE2NjcsImV4aXN0aW5nIjp0cnVlfQ==; _y=9e187072-B9DB-4331-307A-8EF2CCF7AAD6; _shopify_y=9e187072-B9DB-4331-307A-8EF2CCF7AAD6; _hjSessionUser_1004046=eyJpZCI6IjlhYTU2Nzk3LWIwY2UtNTRmYy04NWUwLTU0OTY0MDZiZTY1OCIsImNyZWF0ZWQiOjE3Mjk1MjY0OTkxMjIsImV4aXN0aW5nIjp0cnVlfQ==; _pnss_TgtvAlfG=blocked; _ga_5FPLDLE8C6=GS1.1.1730216484.7.0.1730216484.0.0.0; split=%7B%22split%3A213803%22%3A%22redesign%22%7D; split_all_domain=%7B%22split%3A213803%22%3A%22redesign%22%7D; ___nrbi=%7B%22firstVisit%22%3A1729229221%2C%22userId%22%3A%22204d25fb-3668-46f8-9166-a329e71b2977%22%2C%22userVars%22%3A%5B%5D%2C%22futurePreviousVisit%22%3A1733141908%2C%22timesVisited%22%3A6%7D; _hjSession_1004046=eyJpZCI6IjhjMzFhYTYyLTAxYjUtNDljZS04MmNiLTIwYThlYzU3YTM2MiIsImMiOjE3MzMxNDE5MTEyNTcsInMiOjAsInIiOjAsInNiIjowLCJzciI6MCwic2UiOjAsImZzIjowLCJzcCI6MH0=; ___nrbic=%7B%22previousVisit%22%3A1730200942%2C%22currentVisitStarted%22%3A1733141908%2C%22sessionId%22%3A%22bb41b6a7-eb03-407d-9ab7-67a65646b42f%22%2C%22sessionVars%22%3A%5B%5D%2C%22visitedInThisSession%22%3Atrue%2C%22pagesViewed%22%3A3%2C%22landingPage%22%3A%22https%3A//knowyourmeme.com/memes/all%22%2C%22referrer%22%3A%22%22%2C%22lpti%22%3Anull%7D; _chartbeat2=.1729229221474.1733141951004.0000000000000001.hNuNCC5CNJIkSeVVCJvfyFBsMuwg.1; _cb_svref=external; _pn_TgtvAlfG=eyJzdWIiOnsidWRyIjowLCJpZCI6IktqeDZybVUwYnlUa0JjbTRLMmhsb09lQnNFcjJWcTZsIiwic3MiOi0xfSwibHVhIjoxNzMzMTQxOTIzODUwfQ; _awl=2.1733141960.5-0ec718646045104bee6f0440222cb7ab-6763652d617369612d6561737431-1; _ga_5FPLDLE8C6=GS1.1.1733141908.8.1.1733141969.0.0.0; _chartbeat5=309|1659|%2Fcategories%2Fmeme|https%3A%2F%2Fknowyourmeme.com%2Fcategories%2Fmeme%2Fpage%2F2%3Fsort%3Dnewest%26status%3Dall|Be3E7zZ24C6CAxpsuBBlDykBFOf2Z||c|Be3E7zZ24C6CAxpsuBBlDykBFOf2Z|knowyourmeme.com|',
+        'Referer': 'https://knowyourmeme.com/memes/all',
+        'content-type': 'application/json',
+    })
+    from pprint import pprint
+    pprint(list(_get_index_by_offset(session=session, offset=80)))
+    # sync(
+    #     repository='datacollection/memes_index',
+    #     sync_mode=True,
+    # )
