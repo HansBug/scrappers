@@ -169,7 +169,7 @@ def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: flo
 
             with open(os.path.join(td, 'meta.json'), 'w') as f:
                 json.dump({
-                    'exist_groups': exist_groups,
+                    'exist_groups': sorted(exist_groups),
                 }, f)
 
             with open(os.path.join(td, 'README.md'), 'w') as f:
