@@ -14,6 +14,7 @@ from hfutils.operate import get_hf_client, get_hf_fs, upload_directory_as_direct
 from hfutils.utils import number_to_tag
 from pyquery import PyQuery as pq
 from pyrate_limiter import Limiter, Rate, Duration
+from tqdm import tqdm
 
 from scrappers.utils import get_requests_session
 
@@ -96,7 +97,7 @@ def list_all_from_page(base_url: str, session: Optional[requests.Session] = None
     logging.info(f'Max page of {base_url!r} is {max_page_count!r} ...')
 
     last_id = None
-    for i in range(1, max_page_count + 1):
+    for i in tqdm(range(1, max_page_count + 1), desc=f'Accessing {base_url!r} ...'):
         for item in get_meme_from_page(base_url, last_id, i, session=session):
             yield item
             last_id = item['id']
@@ -196,7 +197,7 @@ def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: flo
             'https': proxy_pool
         })
 
-    for gtitle, base_url in get_meme_list(session=session):
+    for gtitle, base_url in tqdm(list(get_meme_list(session=session)), desc='List Pages'):
         if start_time + max_time_limit < time.time():
             break
         for item in list_all_from_page(base_url=base_url, session=session):
