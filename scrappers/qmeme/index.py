@@ -222,6 +222,6 @@ if __name__ == '__main__':
     logging.try_init_root(level=logging.INFO)
     sync(
         repository='datacollection/quickmeme_index',
-        max_time_limit=2.5 * 60 * 60,
+        max_time_limit=25 * 60 * 60,
         proxy_pool=os.environ['PP_SITE'],
     )
