@@ -103,7 +103,7 @@ def list_all_from_page(base_url: str, session: Optional[requests.Session] = None
 
 
 def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: float = 30,
-         deploy_span: float = 5 * 60):
+         deploy_span: float = 5 * 60, proxy_pool: Optional[str] = None):
     start_time = time.time()
     delete_detached_cache()
     hf_upload_rate = Rate(1, int(math.ceil(Duration.SECOND * upload_time_span)))
@@ -189,6 +189,13 @@ def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: flo
             _total_count = len(df_records)
 
     session = get_requests_session()
+    if proxy_pool:
+        logging.info(f'Proxy pool {proxy_pool!r} enabled.')
+        session.proxies.update({
+            'http': proxy_pool,
+            'https': proxy_pool
+        })
+
     for gtitle, base_url in get_meme_list(session=session):
         if start_time + max_time_limit < time.time():
             break
@@ -215,4 +222,5 @@ if __name__ == '__main__':
     sync(
         repository='datacollection/quickmeme_index',
         max_time_limit=2.5 * 60 * 60,
+        proxy_pool=os.environ['PP_SITE'],
     )
