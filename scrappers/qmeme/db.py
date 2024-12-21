@@ -184,4 +184,5 @@ if __name__ == '__main__':
     sync(
         src_repo='datacollection/quickmeme_index',
         dst_repo='datacollection/quickmeme',
+        batch_size=10000,
     )
