@@ -258,7 +258,7 @@ def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: flo
             })
             exist_ids.add(item['id'])
             has_update = True
-            _deploy(force=False)
+            # _deploy(force=False)
 
         exist_groups.add(gtitle)
         has_update = True
