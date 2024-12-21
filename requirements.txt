@@ -26,3 +26,4 @@ pyrate-limiter>=3
 openai
 httpx[socks]
 markdownify
+dghs-imgutils
