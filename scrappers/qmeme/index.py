@@ -102,6 +102,7 @@ def list_all_from_page(base_url: str, session: Optional[requests.Session] = None
     exist_ids = set()
     retval = []
     lock = Lock()
+    progress = tqdm(total=max_page_count, desc=f'Pages of {base_url!r}')
 
     def _fn(p):
         try:
@@ -113,6 +114,8 @@ def list_all_from_page(base_url: str, session: Optional[requests.Session] = None
         except Exception as err:
             logging.exception(f'Error on {base_url!r}, page #{p} - {err!r}')
             raise
+        finally:
+            progress.update()
 
     tp = ThreadPoolExecutor(max_workers=32)
     for i in range(1, max_page_count + 1):
