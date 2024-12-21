@@ -2,6 +2,8 @@ import json
 import math
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
 from typing import Optional
 from urllib.parse import urljoin
 
@@ -97,11 +99,27 @@ def list_all_from_page(base_url: str, session: Optional[requests.Session] = None
     max_page_count = find_max_page_count(base_url, session=session)
     logging.info(f'Max page of {base_url!r} is {max_page_count!r} ...')
 
-    last_id = None
-    for i in tqdm(range(1, max_page_count + 1), desc=f'Accessing {base_url!r} ...'):
-        for item in get_meme_from_page(base_url, last_id, i, session=session):
-            yield item
-            last_id = item['id']
+    exist_ids = set()
+    retval = []
+    lock = Lock()
+
+    def _fn(p):
+        try:
+            for item in get_meme_from_page(base_url, page_no=p, session=session):
+                with lock:
+                    if item['id'] in exist_ids:
+                        retval.append(item)
+                        exist_ids.add(item['id'])
+        except Exception as err:
+            logging.exception(f'Error on {base_url!r}, page #{p} - {err!r}')
+            raise
+
+    tp = ThreadPoolExecutor(max_workers=32)
+    for i in range(1, max_page_count + 1):
+        tp.submit(_fn, i)
+
+    tp.shutdown(wait=True)
+    return retval
 
 
 def sync(repository: str, max_time_limit: float = 50 * 60, upload_time_span: float = 30,
