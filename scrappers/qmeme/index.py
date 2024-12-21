@@ -108,7 +108,7 @@ def list_all_from_page(base_url: str, session: Optional[requests.Session] = None
         try:
             for item in get_meme_from_page(base_url, page_no=p, session=session):
                 with lock:
-                    if item['id'] in exist_ids:
+                    if item['id'] not in exist_ids:
                         retval.append(item)
                         exist_ids.add(item['id'])
         except Exception as err:
