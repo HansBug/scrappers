@@ -47,10 +47,10 @@ def sync(repository: str, upload_time_span: float = 30,
             filename='table.parquet',
         ))
         d_records = {item['id']: item for item in df.to_dict('records')}
-        exist_pids = set(df['url_name'])
+        exist_caption_urls = set(df['caption_url'])
     else:
         d_records = {}
-        exist_pids = set()
+        exist_caption_urls = set()
 
     _last_update, has_update = None, False
     _total_count = len(d_records)
@@ -118,9 +118,9 @@ def sync(repository: str, upload_time_span: float = 30,
 
     def _fn(item):
         nonlocal has_update
-        # if item['pid'] in exist_pids:
-        #     logging.warning(f'PID {item["pid"]!r} already exist, skipped.')
-        #     return
+        if item['caption_url'] in exist_caption_urls:
+            logging.warning(f'Meme template {item["caption_url"]!r} already exist, skipped.')
+            return
 
         vitem = get_generator_info(caption_url=item['caption_url'], session=session)
         with lock:
@@ -128,6 +128,7 @@ def sync(repository: str, upload_time_span: float = 30,
             logging.info(f'Writing item #{current_item["id"]!r}, url_name: {current_item["url_name"]!r} ...')
             if current_item['id'] not in d_records:
                 d_records[current_item['id']] = current_item
+                exist_caption_urls.add(current_item['caption_url'])
                 has_update = True
             if not d_records[current_item['id']]['alt_names'] and current_item['alt_names']:
                 d_records[current_item['id']]['alt_names'] = current_item['alt_names']
@@ -148,4 +149,3 @@ if __name__ == '__main__':
         repository='datacollection/imgflip_index',
         proxy_pool=os.environ['PP_SITE'],
     )
- 
