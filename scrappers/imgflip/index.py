@@ -118,11 +118,11 @@ def sync(repository: str, upload_time_span: float = 30,
 
     def _fn(item):
         nonlocal has_update
-        if item['pid'] in exist_pids:
-            logging.warning(f'PID {item["pid"]!r} already exist, skipped.')
-            return
+        # if item['pid'] in exist_pids:
+        #     logging.warning(f'PID {item["pid"]!r} already exist, skipped.')
+        #     return
 
-        vitem = get_generator_info(caption_url=item['pid'], session=session)
+        vitem = get_generator_info(caption_url=item['caption_url'], session=session)
         with lock:
             current_item = {**item, **vitem}
             logging.info(f'Writing item #{current_item["id"]!r}, url_name: {current_item["url_name"]!r} ...')
