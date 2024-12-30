@@ -83,8 +83,6 @@ def _process_item(item):
         item['default_settings'] = json.loads(item['default_settings'])
     item['height'] = item.pop('h')
     item['width'] = item.pop('w')
-    assert item['safe_for_work'] in {'yes', 'no'}
-    item['is_sfw'] = item.pop('safe_for_work') == 'yes'
     return item
 
 
@@ -126,8 +124,9 @@ if __name__ == '__main__':
     # pprint(get_generator_info('Horse-Drawing'))
     # pprint(get_generator_info('Drake-Hotline-Bling'))
 
-    pprint(get_generator_info('https://imgflip.com/memegenerator/77045868/Pawn-Stars-Best-I-Can-Do'))
+    # pprint(get_generator_info('https://imgflip.com/memegenerator/77045868/Pawn-Stars-Best-I-Can-Do'))
     # pprint(get_generator_info('https://imgflip.com/memegenerator/Ancient-Aliens'))
+    pprint(get_generator_info('https://imgflip.com/memegenerator/531265826/Kratos-and-my-life-is-yours'))
 
     # for item in iter_all_templates():
     #     print(item['url_name'], item['image_url'])
