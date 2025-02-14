@@ -33,9 +33,14 @@ class CustomConverter(MarkdownConverter):
         self.page_url = page_url
 
     def convert_a(self, el: Tag, text, convert_as_inline):
-        if el['href'] and self.page_url:
+        if el.get('href') and self.page_url:
             el['href'] = urljoin(self.page_url, el['href'])
         return super().convert_a(el, text, convert_as_inline)
+
+    def convert_img(self, el: Tag, text, convert_as_inline):
+        if el.get('src') and self.page_url:
+            el['src'] = urljoin(self.page_url, el['src'])
+        return super().convert_img(el, text, convert_as_inline)
 
 
 def to_md(html, page_url: Optional[str] = None, **options):
