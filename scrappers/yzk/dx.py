@@ -21,7 +21,8 @@ from scrappers.utils import check_video_integrity, get_video_metadata
 
 
 def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30, deploy_span: float = 5 * 60,
-         cookie_file: Optional[str] = None):
+         max_time_limit: float = 2.7 * 60 * 60, cookie_file: Optional[str] = None):
+    start_time = time.time()
     delete_detached_cache()
     hf_upload_rate = Rate(1, int(math.ceil(Duration.SECOND * upload_time_span)))
     hf_upload_limiter = Limiter(hf_upload_rate, max_delay=1 << 32)
@@ -144,6 +145,8 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30, deploy_span
             _clean_dir()
 
         for item in tqdm(df_src_pages.to_dict('records')):
+            if start_time + max_time_limit < time.time():
+                break
             logging.info(f'Processing item #{item["id"]}, video_url: {item["video_source_url"]!r} ...')
 
             with TemporaryDirectory() as td:
