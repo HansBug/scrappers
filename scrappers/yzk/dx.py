@@ -149,7 +149,7 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30, deploy_span
                 try:
                     cmd = [shutil.which('yt-dlp')]
                     if cookie_file:
-                        cmd.extend(['--cookies', cookie_file])
+                        cmd.extend(['--cookies', os.path.normpath(os.path.abspath(cookie_file))])
                     cmd.append(item['video_source_url'])
                     logging.info(f'Running {cmd!r} ...')
                     p = subprocess.run(cmd, cwd=td)
