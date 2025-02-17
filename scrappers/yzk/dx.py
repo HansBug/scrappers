@@ -64,7 +64,7 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30, deploy_span
     df_src_pages = df_src_pages.sort_values(by=['id'], ascending=[True])
 
     logging.info(f'Show videos:\n'
-                 f'{df_src_pages}')
+                 f'{df_src_pages[["id", "title", "video_source_url"]]}')
     quit()
 
     assert shutil.which('yt-dlp'), \
