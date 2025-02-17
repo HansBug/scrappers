@@ -98,7 +98,7 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30, deploy_span
             df_records = df_records.sort_values(by=['id'], ascending=[False])
             df_records.to_parquet(parquet_file, engine='pyarrow', index=False)
 
-            with open(os.path.join(td, 'README.md'), 'w') as f:
+            with open(os.path.join(upload_dir, 'README.md'), 'w') as f:
                 print('---', file=f)
                 print('license: other', file=f)
                 print('language:', file=f)
