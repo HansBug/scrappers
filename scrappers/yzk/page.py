@@ -3,6 +3,7 @@ import os.path
 import re
 from typing import Optional
 from urllib.parse import urljoin
+from pprint import pprint
 
 import requests
 from ditk import logging
@@ -86,8 +87,8 @@ def extract_page_urls(url, session: Optional[requests.Session] = None):
 
 if __name__ == '__main__':
     logging.try_init_root(level=logging.INFO)
-    # d = extract_page_info('http://www.youzhik.com/xxshuxue/xssk/2024/0922/102460.html')
-    # pprint(d)
+    d = extract_page_info('http://www.youzhik.com/xxxinli/xxyzk/2018/0529/52203.html')
+    pprint(d)
 
-    for purl in extract_page_urls('http://youzhik.com/xxxinli/list_10_13.html'):
-        print(purl)
+    # for purl in extract_page_urls('http://youzhik.com/xxxinli/list_10_13.html'):
+    #     print(purl)
