@@ -66,7 +66,7 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30, deploy_span
 
     logging.info(f'Show videos:\n'
                  f'{df_src_pages[["id", "title", "video_source_url"]]}')
-    quit()
+    # quit()
 
     assert shutil.which('yt-dlp'), \
         'No yt-dlp found, you should install it follow these instructions: https://github.com/yt-dlp/yt-dlp'
