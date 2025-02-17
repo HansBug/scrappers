@@ -186,6 +186,7 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30, deploy_span
                 }
                 records.append(row)
                 exist_ids.add(row['id'])
+                has_update = True
 
             _deploy(force=False)
 
