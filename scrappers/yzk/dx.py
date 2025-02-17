@@ -61,6 +61,7 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30, deploy_span
         exist_ids = set()
 
     df_src_pages = df_src_pages[~df_src_pages['id'].isin(exist_ids)]
+    df_src_pages = df_src_pages[~df_src_pages['video_source_urk'].str.contains('player.youku.com')]
     df_src_pages = df_src_pages.sort_values(by=['id'], ascending=[True])
 
     logging.info(f'Show videos:\n'
