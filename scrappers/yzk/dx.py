@@ -1,5 +1,6 @@
 import glob
 import math
+import mimetypes
 import os
 import shutil
 import subprocess
@@ -61,7 +62,7 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30, deploy_span
         exist_ids = set()
 
     df_src_pages = df_src_pages[~df_src_pages['id'].isin(exist_ids)]
-    df_src_pages = df_src_pages[~df_src_pages['video_source_url'].str.contains('player.youku.com')]
+    df_src_pages = df_src_pages[~df_src_pages['video_source_url'].str.contains('player.youku.com/player.php')]
     df_src_pages = df_src_pages.sort_values(by=['id'], ascending=[True])
 
     logging.info(f'Show videos:\n'
@@ -174,12 +175,14 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30, deploy_span
                 os.makedirs(os.path.dirname(dst_video_file), exist_ok=True)
                 shutil.move(video_file, dst_video_file)
 
+                mimetype, _ = mimetypes.guess_type(filename)
                 row = {
                     **item,
                     **meta,
                     'file_in_repo': hf_normpath(os.path.relpath(dst_video_file, upload_dir)),
                     'filename': filename,
                     'file_size': os.path.getsize(dst_video_file),
+                    'mimetype': mimetype,
                 }
                 records.append(row)
                 exist_ids.add(row['id'])
