@@ -133,7 +133,7 @@ def sync(src_repo: str, dst_repo: str, upload_time_span: float = 30, deploy_span
             upload_directory_as_directory(
                 repo_id=dst_repo,
                 repo_type='dataset',
-                local_directory=td,
+                local_directory=upload_dir,
                 path_in_repo='.',
                 message=f'Add {plural_word(len(df_records) - _total_count, "new record")} into index',
             )
